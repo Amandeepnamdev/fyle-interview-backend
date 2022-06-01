@@ -1,3 +1,8 @@
+from unittest import skipIf
+from core import db
+import pytest
+from core.models.assignments import Assignment, AssignmentStateEnum
+
 def test_get_assignments_student_1(client, h_student_1):
     response = client.get(
         '/student/assignments',
@@ -41,7 +46,7 @@ def test_post_assignment_student_1(client, h_student_1):
     assert data['state'] == 'DRAFT'
     assert data['teacher_id'] is None
 
-
+@pytest.mark.skipif(Assignment.get_by_id(2).state != AssignmentStateEnum.DRAFT,reason='Assignment is already submitted')
 def test_submit_assignment_student_1(client, h_student_1):
     response = client.post(
         '/student/assignments/submit',
@@ -58,7 +63,7 @@ def test_submit_assignment_student_1(client, h_student_1):
     assert data['state'] == 'SUBMITTED'
     assert data['teacher_id'] == 2
 
-
+@pytest.mark.skipif(Assignment.get_by_id(2).state == AssignmentStateEnum.DRAFT,reason='Assignment is not yet submitted')
 def test_assingment_resubmitt_error(client, h_student_1):
     response = client.post(
         '/student/assignments/submit',

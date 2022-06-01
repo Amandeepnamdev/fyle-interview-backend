@@ -1,3 +1,7 @@
+from core import db
+import pytest
+from core.models.assignments import Assignment, AssignmentStateEnum
+
 def test_get_assignments_teacher_1(client, h_teacher_1):
     response = client.get(
         '/teacher/assignments',
@@ -43,6 +47,7 @@ def test_grade_assignment_cross(client, h_teacher_2):
     data = response.json
 
     assert data['error'] == 'FyleError'
+    # assert error_response["message"] == 'assignment 1 was submitted to teacher 1 and not teacher 2'
 
 
 def test_grade_assignment_bad_grade(client, h_teacher_1):
@@ -86,6 +91,24 @@ def test_grade_assignment_bad_assignment(client, h_teacher_1):
 def test_grade_assignment_draft_assignment(client, h_teacher_1):
     """
     failure case: only a submitted assignment can be graded
+    """
+    response = client.post(
+        '/teacher/assignments/grade',
+        headers=h_teacher_1
+        , json={
+            "id": 2,
+            "grade": "A"
+        }
+    )
+
+    assert response.status_code == 400
+    data = response.json
+
+    assert data['error'] == 'FyleError'
+
+def test_empty_assignment(client, h_teacher_1):
+    """
+    failure case: empty  assignment will not be graded
     """
     response = client.post(
         '/teacher/assignments/grade',
